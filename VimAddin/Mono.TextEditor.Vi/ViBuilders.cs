@@ -57,6 +57,7 @@ namespace VimAddin
 			bool inUndoTx = false;
 			return (ViBuilderContext ctx) => {
 				var l = ctx.LastKey;
+        var ll;
 				bool noModifiers = l.Modifiers == ModifierType.None;
 				
 				ctx.Message = ctx.Mode == ViEditorMode.Replace? "-- REPLACE --" : "-- INSERT --";
@@ -73,6 +74,18 @@ namespace VimAddin
 						ed.LastInsertedText = lastInserted.ToString ();
 						ed.SetMode (ViEditorMode.Normal);
 					});
+					return true;
+				}
+				// added by Luke A Chase for 'jj' and 'jk' remapping to Escape
+				if (noModifiers && l.Key == Key.j) {
+					ll = l;
+				}
+				if (((noModifiers && l.Key == Key.j) && (noModifiers && ll.Key == Key.j)) || 
+				((noModifiers && l.Key == Key.k) && (noModifiers && ll.Key == Key.j))) {
+					ctx.RunAction ((ViEditor ed) => {
+						ed.SetMode (ViEditorMode.Normal);
+					});
+					ll = null;
 					return true;
 				}
 				
